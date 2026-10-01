@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hino Calibration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/dashboard.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+</head>
+<body>
+  <div class="dashboard-wrapper">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-circle">
+  <img src="assets/img/logo-hino.png" alt="Logo Hino">
+</div>
+      </div>
+
+      <nav class="sidebar-menu">
+        <ul>
+          <li class="menu-item active" data-page="dashboard">
+            <div class="menu-label">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+              <span>Dashboard</span>
+            </div>
+          </li>
+
+          <li class="menu-item has-submenu" data-page="registrasi">
+            <div class="menu-label">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></svg>
+              <span>Registration</span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <ul class="submenu">
+              <li class="submenu-item" data-page="form-registrasi">Form Registrasi</li>
+              <li class="submenu-item" data-page="daftar-alat">List Registrasi Alat Ukur</li>
+            </ul>
+          </li>
+
+          <li class="menu-item has-submenu" data-page="kalibrasi">
+            <div class="menu-label">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m12 12 4-4M8 15h.01M12 7h.01M7 11h.01"/></svg>
+              <span>Calibration</span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <ul class="submenu">
+              <li class="submenu-item has-submenu-inner" data-page="master-list">
+                <div class="submenu-label">
+                  <span>Master List</span>
+                  <svg class="chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                </div>
+                <ul class="submenu-inner">
+                  <li class="submenu-inner-item" data-page="checksheet-kalibrasi">Checksheet Kalibrasi</li>
+                  <li class="submenu-inner-item" data-page="schedule">Schedule</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+
+          <li class="menu-item has-submenu" data-page="traceability">
+            <div class="menu-label">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 7v10M18 11c0 4-6 3-12 6"/></svg>
+              <span>Traceability</span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <ul class="submenu">
+              <li class="submenu-item" data-page="data-master-spare">Master data spare</li>
+              <li class="submenu-item" data-page="schedule-traceability">Input Traceability</li>
+            </ul>
+          </li>
+
+          <li class="menu-item has-submenu" data-page="riwayat">
+            <div class="menu-label">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
+              <span>History</span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <ul class="submenu">
+              <li class="submenu-item" data-page="riwayat-traceability">History Pembatalan</li>
+            </ul>
+          </li>
+
+          <li class="menu-item has-submenu" data-page="sistem">
+            <div class="menu-label">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+              <span>System</span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <ul class="submenu">
+              <li class="submenu-item" data-page="manajemen-akun">Manajemen Akun</li>
+              <li class="submenu-item" data-page="pengaturan">Setting</li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" id="btn-logout">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          <span>Keluar</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main-content" id="main-content">
+      <header class="top-bar">
+        <button class="btn-toggle-sidebar" id="btn-toggle-sidebar" aria-label="Buka menu">&#9776;</button>
+        <div class="greeting">
+          <h1 id="page-title">Halo, <span id="greeting-name">Nama Pengguna</span></h1>
+          <p id="page-subtitle">Selamat datang di Dashboard Sistem Kalibrasi</p>
+        </div>
+        <div class="user-info">
+          <div class="avatar">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+          </div>
+          <div class="user-text">
+            <strong id="user-name">Nama Anda</strong>
+            <span id="user-role">Admin</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="content-area" id="content-area"></div>
+    </main>
+  </div>
+
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/dashboard.js"></script>
+  <script src="assets/js/pages/registrasi.js"></script>
+  <script src="assets/js/pages/daftar-alat.js"></script>
+  <script src="assets/js/pages/kalibrasi.js"></script>
+  <script src="assets/js/pages/checksheet-kalibrasi.js"></script>
+  <script src="assets/js/pages/schedule.js"></script>
+  <script src="assets/js/pages/traceability.js"></script>
+  <script src="assets/js/pages/data-master-spare.js"></script>
+  <script src="assets/js/pages/schedule-traceability.js"></script>
+  <script src="assets/js/pages/riwayat-traceability.js"></script>
+  <script src="assets/js/pages/manajemen-akun.js"></script>
+  <script src="assets/js/pages/pengaturan.js"></script>
+</body>
+</html>

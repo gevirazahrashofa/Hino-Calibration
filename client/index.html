@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Login & Sign Up</title>
+<link rel="stylesheet" href="assets/css/login.css" />
+</head>
+<body>
+
+  <div class="bg-overlay"></div>
+
+  <div class="auth-wrapper">
+
+    <!-- ===================== LOGIN CARD ===================== -->
+    <div class="auth-card" id="loginCard">
+
+      <h1 class="title">Selamat <span>datang!</span></h1>
+      <p class="subtitle">Masuk untuk mengakses akun dan dashboard</p>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="loginUsername">Username</label>
+          <input type="text" id="loginUsername" name="username" placeholder="Masukkan username" autocomplete="username" required />
+        </div>
+
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <div class="password-wrap">
+            <input type="password" id="loginPassword" name="password" placeholder="Masukkan password" autocomplete="current-password" required />
+            <button type="button" class="toggle-eye" data-target="loginPassword" aria-label="Tampilkan password">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="row-between">
+          <label class="checkbox">
+            <input type="checkbox" id="ingatSaya" />
+            <span>Ingat saya</span>
+          </label>
+          <a href="#" class="link-muted" id="lupaPasswordLink">Lupa Password?</a>
+        </div>
+
+        <p class="error-msg" id="loginError"></p>
+
+        <button type="submit" class="btn-primary">Log In</button>
+      </form>
+
+      <p class="switch-text">Tidak punya akun? <a href="#" id="showSignup">Sign Up</a></p>
+    </div>
+
+    <!-- ===================== SIGNUP CARD ===================== -->
+    <div class="auth-card hidden" id="signupCard">
+
+      <h1 class="title">Buat <span>akun</span></h1>
+      <p class="subtitle">Daftar untuk mengakses dashboard</p>
+
+      <form id="signupForm" novalidate>
+        <div class="field">
+          <label for="signupUsername">Username</label>
+          <input type="text" id="signupUsername" name="username" placeholder="Buat username" autocomplete="username" required />
+        </div>
+
+        <div class="field">
+          <label for="signupPassword">Password</label>
+          <div class="password-wrap">
+            <input type="password" id="signupPassword" name="password" placeholder="Buat password" autocomplete="new-password" required minlength="6" />
+            <button type="button" class="toggle-eye" data-target="signupPassword" aria-label="Tampilkan password">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="konfirmasiPassword">Konfirmasi Password</label>
+          <div class="password-wrap">
+            <input type="password" id="konfirmasiPassword" name="konfirmasiPassword" placeholder="Ulangi password" autocomplete="new-password" required minlength="6" />
+            <button type="button" class="toggle-eye" data-target="konfirmasiPassword" aria-label="Tampilkan password">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="roleSelect">Daftar sebagai</label>
+          <select id="roleSelect" name="role">
+            <option value="user" selected>User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <p class="error-msg" id="signupError"></p>
+        <p class="success-msg" id="signupSuccess"></p>
+
+        <button type="submit" class="btn-primary">Sign Up</button>
+      </form>
+
+      <p class="switch-text">Sudah punya akun? <a href="#" id="showLogin">Log In</a></p>
+    </div>
+
+  </div>
+
+  <script src="assets/js/login.js"></script>
+</body>
+</html>
