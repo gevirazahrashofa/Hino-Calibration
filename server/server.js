@@ -13,11 +13,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../client')));
 
 app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/registrasi', require('./routes/registrasiRoutes'));
-app.use('/api/kalibrasi', require('./routes/kalibrasiRoutes'));
-app.use('/api/traceability', require('./routes/traceabilityRoutes'));
-app.use('/api/riwayat', require('./routes/riwayatRoutes'));
-app.use('/api/sistem', require('./routes/sistemRoutes'));
+app.use('/api/alat-ukur', require('./routes/alat-ukur.routes'));
+app.use('/api/pengajuan', require('./routes/pengajuan.routes'));
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/index.html'));

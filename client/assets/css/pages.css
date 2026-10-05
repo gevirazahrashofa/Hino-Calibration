@@ -84,3 +84,78 @@
   display: flex;
   gap: 5px;
 }
+
+.seg { display: inline-flex; background: var(--blue-soft); border-radius: 999px; padding: 4px; margin-bottom: 22px; }
+.seg-btn {
+  font: 500 13px 'Poppins', sans-serif; border: 0; background: transparent; color: var(--blue-deep);
+  padding: 8px 22px; border-radius: 999px; cursor: pointer; transition: background .2s, color .2s;
+}
+.seg-btn.active { background: var(--accent); color: #fff; }
+
+.form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 20px; margin-bottom: 16px; }
+.form-grid.one { grid-template-columns: minmax(0, 520px); }
+
+.fld { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--muted); }
+.fld .req { color: var(--bad); }
+.fld input, .fld select, .fld textarea {
+  font: 400 13px 'Poppins', sans-serif; color: var(--ink);
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.fld input:focus, .fld select:focus, .fld textarea:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(36,147,242,.18);
+}
+
+.msg { min-height: 18px; margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+.msg.ok { color: #12a05c; }
+.msg.err { color: var(--bad); }
+
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+.btn.btn-danger { background: var(--bad); border-color: var(--bad); color: #fff; }
+.btn.btn-sm { padding: 5px 14px; font-size: 12px; }
+
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 14px; }
+.toolbar input, .toolbar select {
+  font: 400 13px 'Poppins', sans-serif; padding: 9px 14px; border: 1px solid var(--line);
+  border-radius: 999px; background: #fff; outline: none;
+}
+.toolbar input { flex: 1; min-width: 220px; }
+.toolbar input:focus, .toolbar select:focus { border-color: var(--accent); }
+.toolbar .count { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+.data-table th, .data-table td { white-space: nowrap; }
+
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200; background: rgba(27,29,58,.45);
+  display: grid; place-items: center; padding: 16px;
+}
+.modal {
+  background: #fff; border-radius: 16px; padding: 24px; width: 100%; max-width: 860px;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal h3 { margin: 0 0 18px; font-size: 18px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+@media (max-width: 900px) { .form-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+
+
+/* Tempel di bagian bawah assets/css/pages.css (setelah blok registrasi sebelumnya) */
+
+.form-section { margin: 20px 0 12px; font-size: 14px; font-weight: 600; color: var(--blue-deep); }
+.fld.wide { grid-column: 1 / -1; }
+.fld textarea { resize: vertical; }
+
+.check-row { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 4px 0 6px; }
+.check-row label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink); cursor: pointer; }
+.check-row input { accent-color: var(--accent); width: 16px; height: 16px; }
+
+.detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 20px; margin-bottom: 8px; }
+.detail-grid small { display: block; font-size: 11px; color: var(--muted); }
+.detail-grid b { font-size: 13px; font-weight: 500; word-break: break-word; }
+
+.form-grid + .fld, .fld + .msg { margin-top: 4px; }
+[hidden] { display: none !important; }
+
+@media (max-width: 900px) { .detail-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .detail-grid { grid-template-columns: 1fr; } }

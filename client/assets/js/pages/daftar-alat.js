@@ -1,108 +1,116 @@
-async function loadFormRegistrasi(container) {
-  container.innerHTML = `
-    <div class="page-header">
-      <h2>Form Registrasi Alat Ukur</h2>
-    </div>
-    <div class="page-section">
-      <form id="form-registrasi-alat">
-        <div class="form-group">
-          <label>Nama Alat</label>
-          <input type="text" id="reg-nama-alat" placeholder="Masukkan nama alat" required>
-        </div>
-        <div class="form-group">
-          <label>Merk</label>
-          <input type="text" id="reg-merk" placeholder="Masukkan merk">
-        </div>
-        <div class="form-group">
-          <label>Model</label>
-          <input type="text" id="reg-model" placeholder="Masukkan model">
-        </div>
-        <div class="form-group">
-          <label>Serial Number</label>
-          <input type="text" id="reg-sn" placeholder="Masukkan serial number">
-        </div>
-        <div class="form-group">
-          <label>No Inventaris</label>
-          <input type="text" id="reg-inv" placeholder="Masukkan no inventaris">
-        </div>
-        <div class="form-group">
-          <label>Lokasi</label>
-          <input type="text" id="reg-lokasi" placeholder="Masukkan lokasi">
-        </div>
-        <button type="submit" class="btn btn-primary">Simpan</button>
-      </form>
-      <div id="reg-message" class="message"></div>
-    </div>
-  `;
+/* Butuh registrasi.js dimuat lebih dulu (ALAT_FIELDS, alatApi, esc, dll). */
+function loadDaftarAlat(c) {
+  const isAdmin = String(authGet('role') || '').toLowerCase() === 'admin';
+  const cols = [
+    ...ALAT_FIELDS.slice(0, 4), ...ALAT_FIELDS.slice(5, 9),
+    { k: 'status', label: 'Status' }, ...ALAT_FIELDS.slice(9)
+  ];
+  let rows = [];
 
-  document.getElementById('form-registrasi-alat').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const data = {
-      nama_alat: document.getElementById('reg-nama-alat').value,
-      merk: document.getElementById('reg-merk').value,
-      model: document.getElementById('reg-model').value,
-      serial_number: document.getElementById('reg-sn').value,
-      no_inventaris: document.getElementById('reg-inv').value,
-      lokasi: document.getElementById('reg-lokasi').value
-    };
-    const result = await apiRequest('/registrasi', 'POST', data);
-    const msg = document.getElementById('reg-message');
-    if (result.message.includes('berhasil')) {
-      msg.className = 'message success';
-      e.target.reset();
-    } else {
-      msg.className = 'message error';
+  c.innerHTML = `
+    <div class="card">
+      <div class="toolbar">
+        <input id="f-q" type="search" placeholder="Cari nama, control no, serial no, model...">
+        <select id="f-status">
+          <option value="">Semua status</option>
+          <option value="active">Active</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <select id="f-tipe">
+          <option value="">Torque & Non Torque</option>
+          <option value="torque">Torque</option>
+          <option value="non-torque">Non Torque</option>
+        </select>
+        <span class="count" id="f-count"></span>
+      </div>
+      <p class="msg" id="list-msg"></p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>${cols.map((f) => `<th>${f.label}</th>`).join('')}${isAdmin ? '<th>Aksi</th>' : ''}</tr></thead>
+          <tbody id="list-body"></tbody>
+        </table>
+      </div>
+    </div>`;
+
+  const q = c.querySelector('#f-q');
+  const st = c.querySelector('#f-status');
+  const tp = c.querySelector('#f-tipe');
+  const msg = c.querySelector('#list-msg');
+  const tbody = c.querySelector('#list-body');
+
+  async function load() {
+    const qs = new URLSearchParams({ q: q.value.trim(), status: st.value, tipe: tp.value });
+    try {
+      rows = await alatApi('/alat-ukur?' + qs);
+      msg.textContent = '';
+      render();
+    } catch (err) {
+      msg.className = 'msg err'; msg.textContent = err.message;
     }
-    msg.textContent = result.message;
-  });
-}
-
-async function loadDaftarAlat(container) {
-  const data = await apiRequest('/registrasi');
-  let rows = '';
-  (data || []).forEach(a => {
-    const badge = a.status === 'aktif' ? 'badge-success' : a.status === 'dalam_kalibrasi' ? 'badge-warning' : 'badge-danger';
-    rows += `<tr>
-      <td>${a.id}</td>
-      <td>${a.nama_alat}</td>
-      <td>${a.merk || '-'}</td>
-      <td>${a.model || '-'}</td>
-      <td>${a.serial_number || '-'}</td>
-      <td>${a.no_inventaris || '-'}</td>
-      <td>${a.lokasi || '-'}</td>
-      <td><span class="badge ${badge}">${a.status}</span></td>
-      <td class="actions-cell">
-        <button class="btn btn-warning btn-sm" onclick="editAlat(${a.id})">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteAlat(${a.id})">Hapus</button>
-      </td>
-    </tr>`;
-  });
-
-  container.innerHTML = `
-    <div class="page-header">
-      <h2>Daftar Alat Ukur</h2>
-    </div>
-    <div class="page-section">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th><th>Nama Alat</th><th>Merk</th><th>Model</th>
-            <th>Serial Number</th><th>No Inventaris</th><th>Lokasi</th><th>Status</th><th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>${rows || '<tr><td colspan="9">Belum ada data</td></tr>'}</tbody>
-      </table>
-    </div>
-  `;
-}
-
-async function deleteAlat(id) {
-  if (confirm('Yakin ingin menghapus?')) {
-    await apiRequest(`/registrasi/${id}`, 'DELETE');
-    loadDaftarAlat(document.getElementById('content-area'));
   }
-}
 
-async function editAlat(id) {
-  alert('Edit functionality for alat ukur ID: ' + id);
+  function render() {
+    c.querySelector('#f-count').textContent = rows.length + ' alat';
+    tbody.innerHTML = rows.length
+      ? rows.map((r, i) => `<tr>
+          ${cols.map((f) => {
+            if (f.k === 'status') return `<td><span class="badge ${r.status === 'active' ? '' : 'bad'}">${esc(r.status)}</span></td>`;
+            if (f.k === 'tipe') return `<td>${r.tipe === 'torque' ? 'Torque' : 'Non Torque'}</td>`;
+            return `<td>${esc(r[f.k])}</td>`;
+          }).join('')}
+          ${isAdmin ? `<td><button class="btn btn-sm" data-i="${i}">Edit</button></td>` : ''}
+        </tr>`).join('')
+      : `<tr><td colspan="${cols.length + 1}">Data tidak ditemukan.</td></tr>`;
+  }
+
+  let t;
+  q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(load, 300); });
+  st.addEventListener('change', load);
+  tp.addEventListener('change', load);
+
+  // Admin: edit data master
+  if (isAdmin) {
+    tbody.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-i]');
+      if (b) openEdit(rows[b.dataset.i]);
+    });
+  }
+
+  function openEdit(r) {
+    const ov = document.createElement('div');
+    ov.className = 'modal-overlay';
+    ov.innerHTML = `
+      <div class="modal">
+        <h3>Edit Alat Ukur</h3>
+        <form novalidate>
+          <div class="form-grid">${alatFieldsHtml(r)}</div>
+          <p class="msg"></p>
+          <div class="modal-actions">
+            <button type="button" class="btn" data-close>Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+          </div>
+        </form>
+      </div>`;
+    document.body.appendChild(ov);
+    const form = ov.querySelector('form');
+    const m = ov.querySelector('.msg');
+    const close = () => ov.remove();
+    ov.querySelector('[data-close]').onclick = close;
+    ov.addEventListener('click', (e) => { if (e.target === ov) close(); });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      m.className = 'msg';
+      const d = alatFormData(form);
+      const miss = alatMissing(d);
+      if (miss.length) { m.classList.add('err'); m.textContent = 'Data belum lengkap: ' + miss.join(', '); return; }
+      try {
+        await alatApi('/alat-ukur/' + r.id, 'PUT', d);
+        close();
+        load();
+      } catch (err) { m.classList.add('err'); m.textContent = err.message; }
+    });
+  }
+
+  load();
 }
