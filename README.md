@@ -2,7 +2,7 @@
 
 Sistem manajemen kalibrasi alat ukur (torque & non-torque) — pengajuan registrasi/cancellation oleh user, review dan approval oleh admin kalibrasi, serta master list alat ukur.
 
-Frontend: HTML/CSS/JS vanilla (`client/`). Backend: Express 4 + Prisma ORM + MySQL (`server/`). Database sebelumnya memakai `mysql2` pool langsung ke XAMPP, sekarang memakai Prisma Client (provider tetap MySQL agar kompatibel XAMPP).
+Frontend: HTML/CSS/JS vanilla (`client/`). Backend: Express 4 + Prisma ORM + MariaDB (`server/`). Database berjalan di Docker (MariaDB 11); tidak ada ketergantungan XAMPP.
 
 ## Fitur
 
@@ -25,11 +25,12 @@ Frontend: HTML/CSS/JS vanilla (`client/`). Backend: Express 4 + Prisma ORM + MyS
 ├── server/
 │   ├── server.js            # entry point Express
 │   ├── config/prisma.js     # singleton PrismaClient
-│   ├── prisma/schema.prisma # sumber kebenaran DB (MySQL)
-│   ├── controllers/         # auth, registrasi (port), sistem (port)
+│   ├── prisma/schema.prisma # sumber kebenaran DB (MariaDB)
+│   ├── prisma/migrations/   # migrasi Prisma
+│   ├── controllers/         # auth, registrasi, sistem
 │   ├── routes/              # auth, alat-ukur, pengajuan, registrasi, sistem
 │   └── middleware/auth.js   # verifyToken, requireRole, adminOnly
-├── database/schema.sql      # DDL lama XAMPP (referensi; pengganti: prisma migrate)
+├── docker-compose.yml       # DB MariaDB + Adminer
 ├── .env.example             # contoh env (commit), .env asli gitignored
 └── README.md
 ```
@@ -37,8 +38,8 @@ Frontend: HTML/CSS/JS vanilla (`client/`). Backend: Express 4 + Prisma ORM + MyS
 ## Prasyarat
 
 - Node.js 18+ dan npm
-- MySQL via XAMPP (atau MariaDB sistem). Default XAMPP: `host=localhost`, `user=root`, password kosong, `port=3306`.
-- `phpMyAdmin` opsional (untuk inspeksi manual).
+- Docker + Docker Compose (untuk database)
+- Tanpa XAMPP — database hanya dari `docker compose`
 
 ## Cara menjalankan (keseluruhan)
 
@@ -54,23 +55,31 @@ Frontend: HTML/CSS/JS vanilla (`client/`). Backend: Express 4 + Prisma ORM + MyS
    ```
 3. Siapkan env (dibaca dari `server/.env` oleh Prisma CLI dan `server.js`; salin ke dua lokasi agar konsisten):
    ```bash
-   cp .env.example .env
-   cp .env.example server/.env
-   # edit DATABASE_URL jika perlu, contoh XAMPP:
-   # DATABASE_URL="mysql://root:@localhost:3306/hino_calibration"
+   cp ../.env.example ../.env
+   cp ../.env.example .env
+   # isi default sudah cocok untuk docker-compose:
+   # DATABASE_URL="mysql://hino:hino_pass@localhost:3307/hino_calibration"
    ```
-4. Nyalakan MySQL (XAMPP):
-   - Buka XAMPP Control Panel → Start MySQL, atau `sudo /opt/lampp/lampp startmysql`.
-   - Pastikan database ada (Prisma migrate membuatnya otomatis; atau manual `CREATE DATABASE hino_calibration;`).
+4. Nyalakan database Docker (MariaDB 11 di `localhost:3307`):
+   ```bash
+   docker compose up -d db
+   docker compose ps
+   docker compose logs -f db
+   ```
+   Database `hino_calibration`, user `hino` / password `hino_pass` dibuat otomatis. Prisma migrate juga bisa membuat DB bila belum ada.
 5. Migrasi Prisma (membuat tabel `users, alat_ukur, riwayat_pembatalan, pengajuan, pengaturan`):
    ```bash
-   npx prisma migrate dev --name init
+   npx prisma migrate dev
    npx prisma generate
    ```
-   Migrasi dari data XAMPP lama: `mysqldump` / export phpMyAdmin lalu import ke `hino_calibration` sebelum migrate, atau biarkan migrate membuat skema kosong lalu isi ulang.
+   Catatan: user `hino` tidak punya hak `CREATE DATABASE` untuk shadow DB migrate. Bila `migrate dev` error `P3014/P1010`, jalankan sekali dengan URL root:
+   ```bash
+   DATABASE_URL="mysql://root:root@localhost:3307/hino_calibration" npx prisma migrate dev
+   ```
+   Runtime app tetap memakai `hino` (cukup hak CRUD).
 6. Jalankan server:
    ```bash
-   npm run dev     # nodemon, auto-reload
+   npm run dev     # nodemon, auto-reload (atau: npm run db:up untuk DB saja)
    # atau
    npm start       # node server.js
    ```
@@ -78,19 +87,29 @@ Frontend: HTML/CSS/JS vanilla (`client/`). Backend: Express 4 + Prisma ORM + MyS
    - Login: `http://localhost:3000/` (atau `/`)
    - Dashboard: `http://localhost:3000/dashboard` (butuh token, auto-redirect jika belum login)
    - Health: `http://localhost:3000/api/health`
+   - Adminer (pengganti phpMyAdmin): `http://localhost:8081` — server `db`, user `hino`, password `hino_pass`, db `hino_calibration`
 
-Buat admin pertama: daftar sebagai `user` via UI, lalu di MySQL:
+Buat admin pertama: daftar sebagai `user` via UI, lalu via Adminer / Prisma Studio:
 ```sql
 UPDATE users SET role='admin' WHERE username='nama_user';
+```
+
+Reset total (hapus data DB):
+```bash
+docker compose down -v
+docker compose up -d db
+npx prisma migrate dev
 ```
 
 ## Variabel environment
 
 | Key | Contoh | Keterangan |
 |---|---|---|
-| `DATABASE_URL` | `mysql://root:@localhost:3306/hino_calibration` | koneksi Prisma MySQL |
+| `DATABASE_URL` | `mysql://hino:hino_pass@localhost:3307/hino_calibration` | koneksi Prisma ke MariaDB Docker |
 | `PORT` | `3000` | port Express + frontend statis |
 | `JWT_SECRET` | `ganti_dengan_secret_yang_kuat` | secret JWT (wajib diganti di produksi) |
+
+Kredensial Docker (`docker-compose.yml`): root `root`, user `hino` / `hino_pass`, DB `hino_calibration`, host port `3307`.
 
 ## API ringkas
 
@@ -118,22 +137,23 @@ Format body frontend memakai `snake_case` (`nama_alat, control_number, ...`); ba
 
 - `npm start` — jalan produksi
 - `npm run dev` — nodemon
+- `npm run db:up` / `db:down` / `db:logs` — kontrol container DB
 - `npm run prisma:generate` — generate Prisma Client
 - `npm run prisma:migrate` — `prisma migrate dev`
 - `npm run prisma:studio` — GUI DB
 
 ## Troubleshooting
 
-- `Can't connect to MySQL / ERROR 2002`: MySQL XAMPP belum start. Start via panel, cek `DATABASE_URL` (user/password/port/socket).
+- `Can't reach database / P1000/P1001`: container DB belum ready. Cek `docker compose ps`, `docker compose logs db`, tunggu healthcheck hijau, cek `DATABASE_URL` (port `3307`, bukan `3306`).
+- `Port 3307 sudah dipakai`: hentikan MySQL lokal lain atau ubah mapping di `docker-compose.yml`.
 - `P2002 / Control number sudah terdaftar`: `control_number` unique — pakai nomor lain atau edit data lama.
-- `401 Token tidak ditemukan / Sesi habis`: login ulang; pastikan header `Authorization: Bearer ...` terkirim (frontend baru memakai `/api` relatif, bukan `localhost:3000` hardcode).
+- `401 Token tidak ditemukan / Sesi habis`: login ulang; pastikan header `Authorization: Bearer ...` terkirim (frontend memakai `/api` relatif).
 - `Prisma enum / non-torque`: API menerima `non-torque` dan `non_torque`, disimpan sebagai enum Prisma `non_torque` (`@map("non-torque")`).
 - Dashboard angka/kalender/grafik masih contoh: memang dummy di `dashboard.js` (`TOTAL_TORSI`, `jadwalHari()`), belum query API.
 - `.../registrasi` dan `.../sistem` 404: pastikan `npm install` sudah menarik `@prisma/client` dan server dijalankan dari `server/` setelah migrate.
 
-## Catatan migrasi (mysql2 → Prisma)
+## Catatan database
 
-- `server/config/db.js` (pool `mysql2`) dihapus, diganti `server/config/prisma.js`.
-- `ER_DUP_ENTRY` → `P2002`, transaction manual `getConnection/beginTransaction` → `prisma.$transaction`.
-- Auth disatukan ke `middleware/auth.js` (`verifyToken`, `adminOnly`); bug lama `role='staff'` diperbaiki ke `'user'` sesuai enum DB.
-- Tabel baru yang sebelumnya tidak ada di `schema.sql` (`pengajuan`, `pengaturan` + kolom `users.nama_lengkap/email`) kini ada di `prisma/schema.prisma` sebagai sumber kebenaran.
+- Sumber kebenaran skema: `server/prisma/schema.prisma` + `server/prisma/migrations/`.
+- DB lokal: MariaDB 11 via `docker-compose.yml` (`db_data` volume). Tidak ada `database/schema.sql` lagi.
+- duplikat `ER_DUP_ENTRY` lama → `P2002`; transaction manual → `prisma.$transaction`; auth disatukan di `middleware/auth.js`.

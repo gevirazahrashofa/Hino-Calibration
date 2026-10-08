@@ -1,0 +1,35 @@
+services:
+  db:
+    image: mariadb:11
+    container_name: hino-calibration-db
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: hino_calibration
+      MARIADB_USER: hino
+      MARIADB_PASSWORD: hino_pass
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # Pengganti phpMyAdmin (opsional): http://localhost:8081
+  # Login: server=db, user=hino, password=hino_pass, db=hino_calibration
+  adminer:
+    image: adminer
+    container_name: hino-calibration-adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

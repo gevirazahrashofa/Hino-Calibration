@@ -1,6 +1,5 @@
-// Prisma schema — migrasi dari database/schema.sql (XAMPP MySQL) + tabel implisit.
-// Provider tetap MySQL agar kompatibel dengan XAMPP.
-// Jalankan: npx prisma migrate dev --name init
+// Prisma schema — sumber kebenaran DB (MariaDB via Docker, provider mysql).
+// Jalankan: docker compose up -d db && npx prisma migrate dev
 
 generator client {
   provider = "prisma-client-js"
