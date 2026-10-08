@@ -31,6 +31,7 @@ Frontend: HTML/CSS/JS vanilla (`client/`). Backend: Express 4 + Prisma ORM + Mar
 │   ├── routes/              # auth, alat-ukur, pengajuan, registrasi, sistem
 │   └── middleware/auth.js   # verifyToken, requireRole, adminOnly
 ├── docker-compose.yml       # DB MariaDB + Adminer
+├── docker/init-db/          # grant hak migrate untuk user hino (jalan saat volume baru)
 ├── package.json             # script root (teruskan ke server/)
 ├── .env.example             # contoh env (commit), .env asli gitignored
 └── README.md
@@ -72,7 +73,7 @@ Semua perintah di bawah dijalankan dari root proyek (ada `package.json` root yan
    npm run prisma:migrate
    npm run prisma:generate
    ```
-   Catatan: user `hino` tidak punya hak `CREATE DATABASE` untuk shadow DB migrate. Bila `migrate dev` error `P3014/P1010`, jalankan sekali dari `server/` dengan URL root:
+   Catatan: `docker/init-db/01-grants.sql` memberi user `hino` hak `CREATE DATABASE` saat volume pertama kali dibuat, jadi migrate langsung jalan. Bila memakai DB lama (sebelum grant ada) dan error `P3014/P1010`, jalankan sekali dari `server/` dengan URL root:
    ```bash
    cd server && DATABASE_URL="mysql://root:root@localhost:3307/hino_calibration" npx prisma migrate dev
    ```

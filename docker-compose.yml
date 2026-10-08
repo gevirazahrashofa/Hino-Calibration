@@ -12,6 +12,7 @@ services:
       MARIADB_PASSWORD: hino_pass
     volumes:
       - db_data:/var/lib/mysql
+      - ./docker/init-db:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-uroot", "-proot"]
       interval: 10s
