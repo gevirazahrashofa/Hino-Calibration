@@ -1,27 +1,39 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <!-- Pengaturan dasar halaman -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hino Calibration</title>
+
+  <!-- Font yang digunakan pada website -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Manggil file CSS -->
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/dashboard.css">
   <link rel="stylesheet" href="assets/css/pages.css">
 </head>
+
 <body>
+
+  <!-- Container utama dashboard -->
   <div class="dashboard-wrapper">
 
+    <!-- Sidebar / navigasi -->
     <aside class="sidebar" id="sidebar">
+
+      <!-- Logo Hino -->
       <div class="sidebar-header">
         <div class="logo-circle"><img src="assets/img/logo-hino.png" alt="Logo Hino"></div>
       </div>
 
-      <!-- Menu dibuat otomatis oleh dashboard.js sesuai role (admin / user) -->
+      <!-- Menu sidebar berdasarkan role user/admin -->
       <nav class="sidebar-menu"><ul id="menu-list"></ul></nav>
 
+      <!-- Tombol logout -->
       <div class="sidebar-footer">
         <button class="btn-logout" id="btn-logout">
           <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
@@ -30,13 +42,22 @@
       </div>
     </aside>
 
+    <!-- Konten utama dashboard -->
     <main class="main-content" id="main-content">
+
+      <!-- Header dashboard -->
       <header class="top-bar">
+
+        <!-- Tombol buka/tutup sidebar -->
         <button class="btn-toggle-sidebar" id="btn-toggle-sidebar" aria-label="Buka menu">&#9776;</button>
+
+        <!-- Judul dan keterangan halaman -->
         <div class="greeting">
           <h1 id="page-title"></h1>
           <p id="page-subtitle"></p>
         </div>
+
+        <!-- Informasi user yang sedang login -->
         <div class="user-info">
           <div class="avatar">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
@@ -48,16 +69,27 @@
         </div>
       </header>
 
+      <!-- Tempat menampilkan isi setiap halaman -->
       <div class="content-area" id="content-area"></div>
     </main>
   </div>
 
+  <!-- Background saat sidebar dibuka -->
   <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
+  <!-- File JavaScript utama -->
   <script src="assets/js/app.js"></script>
+
+  <!-- Pengaturan dashboard dan menu berdasarkan role -->
   <script src="assets/js/dashboard.js"></script>
+
+  <!-- Fitur Form Registrasi -->
   <script src="assets/js/pages/registrasi.js"></script>
+
+  <!-- Fitur Pengajuan Alat -->
   <script src="assets/js/pages/pengajuan.js"></script>
+
+  <!-- Fitur Daftar Alat -->
   <script src="assets/js/pages/daftar-alat.js"></script>
   
 </body>

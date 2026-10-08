@@ -159,3 +159,22 @@
 
 @media (max-width: 900px) { .detail-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .detail-grid { grid-template-columns: 1fr; } }
+
+/* Perbaikan: kolom paling kanan di jendela (modal) tidak lagi terpotong */
+.form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fld input:not([type="checkbox"]), .fld select, .fld textarea { width: 100%; min-width: 0; }
+@media (max-width: 900px) { .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .form-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.sig-row { display: flex; flex-wrap: wrap; gap: 16px 24px; margin: 6px 0 14px; }
+.sig-field { flex: 1 1 280px; max-width: 480px; display: flex; flex-direction: column; gap: 6px; }
+.sig-label { font-size: 13px; font-weight: 500; color: #2d3254; }
+.sig-label .req { color: var(--bad); }
+.sig-box { border: 1px dashed #9fb0e6; border-radius: 12px; background: #fff; }
+.sig-canvas { display: block; width: 100%; height: auto; aspect-ratio: 480 / 160; touch-action: none; cursor: crosshair; border-radius: 12px; }
+.sig-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; }
+.sig-actions small { color: var(--muted); font-size: 11px; }
+.sig-img { max-width: 240px; max-height: 100px; border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 4px; }
+
+.detail-grid .wide { grid-column: 1 / -1; }
+.btn-row { display: flex; gap: 6px; }

@@ -89,74 +89,332 @@ document.addEventListener('DOMContentLoaded', () => {
     return `<li class="menu-item has-submenu"><div class="menu-label">${icon}<span>${m.label}</span>${CHEV}</div><ul class="submenu">${subs}</ul></li>`;
   }).join('');
 
-  /* ---------- Isi halaman Dashboard: beda untuk admin & user ---------- */
-  // Data di bawah masih contoh. Ganti dengan data dari API Anda.
+  /* =====================================================================
+     ISI HALAMAN DASHBOARD  (SEMUA DATA DI BAWAH INI ADALAH CONTOH / DUMMY)
+     Tidak terhubung ke menu lain maupun database.
+     Cari tulisan "DATA CONTOH" untuk mengganti isinya.
+     ===================================================================== */
+
+  /* ---------- DATA CONTOH 1: angka ringkasan ---------- */
+  const TOTAL_TORSI = 96;
+  const TOTAL_NON_TORSI = 152;
+  const TOTAL_ALAT = TOTAL_TORSI + TOTAL_NON_TORSI;
+
+  /* ---------- DATA CONTOH 2: group & jadwal kalibrasi alat torsi ---------- */
+  const GROUPS = ['Machining A', 'Machining B', 'Assembly', 'Vehicle QC'];
+  const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  const HARI = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+  const TORQUE_MODELS = ['Torque Wrench 50 Nm', 'Torque Wrench 100 Nm', 'Torque Wrench 200 Nm', 'Torque Wrench 350 Nm', 'Torque Driver 10 Nm', 'Torque Driver 25 Nm'];
+
+  // angka acak yang selalu sama untuk masukan yang sama (supaya data contoh stabil)
+  const rnd = (...a) => {
+    let h = 2166136261;
+    for (const c of a.join('|')) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
+    return h >>> 0;
+  };
+
+  // Jadwal alat torsi pada satu tanggal (Sabtu & Minggu libur). m = 0..11
+  function jadwalHari(y, m, d) {
+    const dow = new Date(y, m, d).getDay();
+    if (dow === 0 || dow === 6) return [];
+    const out = [];
+    GROUPS.forEach((g, gi) => {
+      const r = rnd(y, m, d, g) % 5;
+      const n = r === 0 ? 0 : (r % 3) + 1; // 0..3 alat per group
+      for (let i = 0; i < n; i++) {
+        out.push({
+          id: `${y}-${m}-${d}-${gi}-${i}`,
+          group: g,
+          nama: TORQUE_MODELS[rnd(y, m, d, g, i) % TORQUE_MODELS.length],
+          no: `TQ-${100 + (rnd(g, d, i, m) % 900)}`
+        });
+      }
+    });
+    return out;
+  }
+
+  const NOW = new Date();
+  const TODAY = { y: NOW.getFullYear(), m: NOW.getMonth(), d: NOW.getDate() };
+  const todayList = jadwalHari(TODAY.y, TODAY.m, TODAY.d);
+
+  /* ---------- DATA CONTOH 3: alat baru perlu review (admin) & pengajuan user ---------- */
+  const ALAT_BARU = [
+    { tgl: '07 Okt 2026', nama: 'Torque Wrench 200 Nm', pengaju: 'Budi', tipe: 'Torsi' },
+    { tgl: '06 Okt 2026', nama: 'Micrometer 0-25 mm', pengaju: 'Sari', tipe: 'Non-torsi' },
+    { tgl: '06 Okt 2026', nama: 'Torque Driver 10 Nm', pengaju: 'Andi', tipe: 'Torsi' },
+    { tgl: '05 Okt 2026', nama: 'Dial Gauge 10 mm', pengaju: 'Rina', tipe: 'Non-torsi' },
+    { tgl: '03 Okt 2026', nama: 'Caliper Digital 150 mm', pengaju: 'Budi', tipe: 'Non-torsi' }
+  ];
+  const PENGAJUAN_USER = [
+    { tgl: '07 Okt 2026', nama: 'Torque Wrench 200 Nm', tipe: 'Torsi', status: 'Pending' },
+    { tgl: '03 Okt 2026', nama: 'Caliper Digital 150 mm', tipe: 'Non-torsi', status: 'Pending' },
+    { tgl: '27 Sep 2026', nama: 'Dial Gauge 10 mm', tipe: 'Non-torsi', status: 'Approved' },
+    { tgl: '20 Sep 2026', nama: 'Torque Driver 25 Nm', tipe: 'Torsi', status: 'Approved' },
+    { tgl: '12 Sep 2026', nama: 'Height Gauge 300 mm', tipe: 'Non-torsi', status: 'Rejected' }
+  ];
+
+  /* ---------- DATA CONTOH 4: hasil kalibrasi OK / NG untuk grafik ---------- */
+  const isFuture = (y, m) => y > TODAY.y || (y === TODAY.y && m > TODAY.m);
+  function hasilBulan(g, y, m) {
+    if (isFuture(y, m)) return { ok: 0, ng: 0 };
+    const gs = g === 'all' ? GROUPS : [g];
+    let ok = 0, ng = 0;
+    gs.forEach((x) => {
+      const total = 18 + (rnd(x, y, m) % 12);
+      const n = rnd(x, y, m, 'ng') % 6;
+      ng += n; ok += total - n;
+    });
+    return { ok, ng };
+  }
+  function hasilMinggu(g, y, m, w) {
+    if (isFuture(y, m)) return { ok: 0, ng: 0 };
+    const gs = g === 'all' ? GROUPS : [g];
+    let ok = 0, ng = 0;
+    gs.forEach((x) => {
+      const total = 4 + (rnd(x, y, m, w) % 5);
+      const n = rnd(x, y, m, w, 'ng') % 3;
+      ng += n; ok += total - n;
+    });
+    return { ok, ng };
+  }
+
+  /* ---------- State dashboard (bertahan selama halaman tidak di-refresh) ---------- */
+  const dash = {
+    cal: { y: TODAY.y, m: TODAY.m },
+    sel: { ...TODAY },
+    done: new Set(todayList.slice(0, Math.floor(todayList.length * 0.4)).map((t) => t.id)),
+    chart: { group: 'all', year: TODAY.y, month: 'all', table: false }
+  };
+
+  /* ---------- Potongan HTML kecil ---------- */
   const statCard = (label, value, tone = '') =>
     `<div class="card stat-card ${tone}"><div><div class="stat-value">${value}</div><div class="stat-label">${label}</div></div></div>`;
-  const row = (date, name, status, tone = '', action = '') =>
-    `<div class="row-item"><span class="date">${date}</span><span class="name">${name}</span><span class="badge ${tone}">${status}</span>${action}</div>`;
-  const bar = (name, n, total, tone = '') =>
-    `<div class="bar-row"><span class="bar-name">${name}</span><div class="bar-track"><div class="bar-fill ${tone}" style="width:${(n / total) * 100}%"></div></div><span class="bar-num">${n}</span></div>`;
   const tr = (...cells) => `<tr>${cells.map((x) => `<td>${x}</td>`).join('')}</tr>`;
   const table = (heads, rows) =>
     `<div class="table-wrap"><table class="data-table"><thead><tr>${heads.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
+  const statusBadge = (s) => `<span class="badge ${s === 'Pending' ? 'warn' : s === 'Rejected' ? 'bad' : ''}">${s}</span>`;
+  const tipeBadge = (t) => `<span class="badge ${t === 'Torsi' ? 'blue' : ''}">${t}</span>`;
+  const fmtTgl = (d) => `${d.d} ${BULAN[d.m]} ${d.y}`;
+  const isToday = (y, m, d) => y === TODAY.y && m === TODAY.m && d === TODAY.d;
 
-  function dashboardAdmin() {
+  /* ---------- Kerangka halaman ---------- */
+  function dashboardHtml() {
+    const belum = todayList.filter((t) => !dash.done.has(t.id)).length;
+    const bawah = isAdmin
+      ? `<section class="card"><div class="db-head"><h3>Alat Ukur Baru Perlu Review</h3><span class="badge warn">${ALAT_BARU.length} menunggu</span></div>
+          ${table(['Tanggal', 'Nama Alat', 'Diajukan Oleh', 'Tipe', 'Status'],
+            ALAT_BARU.map((a) => tr(a.tgl, a.nama, a.pengaju, tipeBadge(a.tipe), '<span class="badge warn">Menunggu review</span>')).join(''))}
+        </section>`
+      : `<section class="card"><div class="db-head"><h3>Alat Ukur yang Saya Ajukan</h3><span class="badge blue">${PENGAJUAN_USER.length} pengajuan</span></div>
+          ${table(['Tanggal', 'Nama Alat', 'Tipe', 'Status'],
+            PENGAJUAN_USER.map((a) => tr(a.tgl, a.nama, tipeBadge(a.tipe), statusBadge(a.status))).join(''))}
+        </section>`;
+
     return `
+      <div class="db-note">Data di dashboard ini masih contoh (dummy) dan belum terhubung ke menu lain.</div>
       <section class="stat-grid">
-        ${statCard('Pengajuan Menunggu ACC', 7, 'warn')}
-        ${statCard('Total Alat Ukur', 248)}
-        ${statCard('Jadwal Bulan Ini', 36, 'ok')}
-        ${statCard('Melewati Jatuh Tempo', 4, 'bad')}
+        ${statCard('Total Semua Alat Ukur', TOTAL_ALAT)}
+        ${statCard('Total Alat Torsi', TOTAL_TORSI, 'ok')}
+        ${statCard('Total Alat Non-Torsi', TOTAL_NON_TORSI)}
+        ${statCard('Torsi Belum Dikalibrasi Hari Ini', `<span id="db-belum-stat">${belum}</span>`, 'warn')}
       </section>
+
       <section class="panel-grid">
-        <div class="card"><h3>Pengajuan Menunggu ACC</h3><div class="row-list">
-          ${row('01 Okt 2026', 'Torque Wrench - Budi', 'Pending', 'warn', '<button class="btn btn-sm" data-go="pengajuan-masuk">Review</button>')}
-          ${row('30 Sep 2026', 'Micrometer - Sari', 'Pending', 'warn', '<button class="btn btn-sm" data-go="pengajuan-masuk">Review</button>')}
-          ${row('29 Sep 2026', 'Dial Gauge - Andi', 'Pending', 'warn', '<button class="btn btn-sm" data-go="pengajuan-masuk">Review</button>')}
-        </div></div>
-        <div class="card"><h3>Status Alat Ukur</h3>
-          ${bar('Valid', 196, 248, 'ok')}${bar('Mendekati', 12, 248, 'warn')}${bar('Kadaluarsa', 4, 248, 'bad')}${bar('Dalam proses', 36, 248)}
+        <div class="card" id="db-cal"></div>
+        <div class="card" id="db-plan"></div>
+      </section>
+
+      ${bawah}
+
+      <section class="card" id="db-chart"></section>`;
+  }
+
+  /* ---------- Kalender umum ---------- */
+  function renderCalendar(root) {
+    const { y, m } = dash.cal;
+    const first = (new Date(y, m, 1).getDay() + 6) % 7; // Senin = 0
+    const days = new Date(y, m + 1, 0).getDate();
+    let cells = HARI.map((h) => `<div class="db-dow">${h}</div>`).join('');
+    for (let i = 0; i < first; i++) cells += '<div class="db-day empty"></div>';
+    for (let d = 1; d <= days; d++) {
+      const n = jadwalHari(y, m, d).length;
+      const cls = ['db-day', isToday(y, m, d) ? 'today' : '', dash.sel.y === y && dash.sel.m === m && dash.sel.d === d ? 'sel' : ''].join(' ');
+      cells += `<button type="button" class="${cls}" data-day="${d}" aria-label="${d} ${BULAN[m]}: ${n} alat torsi"><span class="db-dn">${d}</span>${n ? `<span class="db-chip">${n} alat</span>` : ''}</button>`;
+    }
+
+    const s = dash.sel;
+    const list = jadwalHari(s.y, s.m, s.d);
+    const per = GROUPS.map((g) => [g, list.filter((t) => t.group === g).length]).filter((x) => x[1] > 0);
+    const detail = per.length
+      ? per.map(([g, n]) => `<div class="db-grow"><span class="db-gname">${g}</span><span class="db-gnum">${n} alat torsi</span></div>`).join('')
+      : '<div class="db-empty">Tidak ada jadwal kalibrasi torsi.</div>';
+
+    root.querySelector('#db-cal').innerHTML = `
+      <div class="db-head">
+        <h3>Kalender Kalibrasi Torsi</h3>
+        <div class="db-nav">
+          <button type="button" class="btn btn-sm" data-cal="-1" aria-label="Bulan sebelumnya">‹</button>
+          <span class="db-month">${BULAN[m]} ${y}</span>
+          <button type="button" class="btn btn-sm" data-cal="1" aria-label="Bulan berikutnya">›</button>
         </div>
-      </section>
-      <section class="card"><h3>Aktivitas Terbaru</h3>
-        ${table(['Tanggal', 'Alat Ukur', 'Aktivitas', 'Oleh', 'Status'], [
-          tr('30 Sep 2026', 'Micrometer 0-25 mm', 'Checksheet kalibrasi diisi', 'Admin', '<span class="badge">Selesai</span>'),
-          tr('29 Sep 2026', 'Dial Gauge 10 mm', 'Registrasi disetujui', 'Admin', '<span class="badge blue">Disetujui</span>'),
-          tr('28 Sep 2026', 'Torque Wrench 200 Nm', 'Jadwal diperbarui', 'Admin', '<span class="badge warn">Terjadwal</span>')
-        ].join(''))}
-      </section>`;
+      </div>
+      <div class="db-cal-grid">${cells}</div>
+      <div class="db-detail">
+        <div class="db-detail-title">Jadwal ${fmtTgl(s)}${isToday(s.y, s.m, s.d) ? ' <span class="badge blue">Hari ini</span>' : ''}</div>
+        ${detail}
+      </div>`;
   }
 
-  function dashboardUser() {
-    return `
-      <section class="stat-grid">
-        ${statCard('Pengajuan Saya', 5)}
-        ${statCard('Menunggu Persetujuan', 2, 'warn')}
-        ${statCard('Disetujui', 2, 'ok')}
-        ${statCard('Ditolak', 1, 'bad')}
-      </section>
-      <section class="panel-grid">
-        <div class="card"><h3>Aksi Cepat</h3>
-          <div class="row-list">
-            <button class="btn btn-primary" data-go="form-registrasi">Isi Form Registration</button>
-            <button class="btn" data-go="daftar-alat">Cari Alat Ukur</button>
-            <button class="btn" data-go="schedule">Lihat Schedule Kalibrasi</button>
-          </div></div>
-        <div class="card"><h3>Jadwal Kalibrasi Terdekat</h3><div class="row-list">
-          ${row('03 Okt 2026', 'Micrometer 0-25 mm', 'Terjadwal')}
-          ${row('05 Okt 2026', 'Caliper Digital 150 mm', 'Terjadwal')}
-          ${row('08 Okt 2026', 'Torque Wrench 200 Nm', 'Segera', 'warn')}
-        </div></div>
-      </section>
-      <section class="card"><h3>Pengajuan Saya Terbaru</h3>
-        ${table(['Tanggal', 'Kategori', 'Nama Alat', 'Status'], [
-          tr('01 Okt 2026', 'Registration', 'Torque Wrench', '<span class="badge warn">Pending</span>'),
-          tr('27 Sep 2026', 'Registration', 'Dial Gauge', '<span class="badge">Approved</span>'),
-          tr('20 Sep 2026', 'Cancellation', 'Caliper', '<span class="badge bad">Rejected</span>')
-        ].join(''))}
-      </section>`;
+  /* ---------- Plan vs Actual + daftar belum dikalibrasi ---------- */
+  function renderPlan(root) {
+    const plan = todayList.length;
+    const actual = todayList.filter((t) => dash.done.has(t.id)).length;
+    const sisa = plan - actual;
+    const pct = plan ? Math.round((actual / plan) * 100) : 0;
+    const belum = todayList.filter((t) => !dash.done.has(t.id));
+
+    const perGroup = GROUPS.map((g) => {
+      const p = todayList.filter((t) => t.group === g);
+      const a = p.filter((t) => dash.done.has(t.id)).length;
+      return p.length
+        ? `<div class="bar-row"><span class="bar-name">${g}</span><div class="bar-track"><div class="bar-fill" style="width:${(a / p.length) * 100}%"></div></div><span class="bar-num">${a}/${p.length}</span></div>`
+        : '';
+    }).join('');
+
+    const rows = belum.length
+      ? belum.map((t) => `<div class="row-item"><span class="date">${t.no}</span><span class="name">${t.nama}<small class="db-sub">${t.group}</small></span>${
+          isAdmin ? `<button type="button" class="btn btn-sm" data-done="${t.id}">Simulasi isi</button>` : '<span class="badge warn">Belum</span>'
+        }</div>`).join('')
+      : `<div class="db-empty">${plan ? 'Semua alat torsi hari ini sudah dikalibrasi.' : 'Tidak ada jadwal torsi hari ini.'}</div>`;
+
+    root.querySelector('#db-plan').innerHTML = `
+      <div class="db-head"><h3>Plan vs Actual Hari Ini</h3><span class="badge blue">${pct}%</span></div>
+      <div class="db-pa">
+        <div><div class="db-pa-num">${plan}</div><div class="db-pa-lbl">Plan</div></div>
+        <div><div class="db-pa-num">${actual}</div><div class="db-pa-lbl">Actual</div></div>
+        <div><div class="db-pa-num warn">${sisa}</div><div class="db-pa-lbl">Sisa</div></div>
+      </div>
+      <div class="bar-track db-pa-bar"><div class="bar-fill" style="width:${pct}%"></div></div>
+      ${perGroup ? `<div class="db-pergroup">${perGroup}</div>` : ''}
+      <div class="db-subhead">Torsi belum dikalibrasi hari ini</div>
+      <div class="row-list">${rows}</div>
+      ${isAdmin ? '<div class="db-hint">Nanti angka Actual bertambah otomatis saat admin menyimpan checksheet. Tombol di atas hanya simulasi.</div>' : ''}`;
+
+    const el = root.querySelector('#db-belum-stat');
+    if (el) el.textContent = sisa;
   }
+
+  /* ---------- Grafik OK vs NG (SVG, tanpa library) ---------- */
+  const C_OK = '#6683ea', C_NG = '#f0566a';
+  function chartData() {
+    const { group, year, month } = dash.chart;
+    if (month === 'all') {
+      return BULAN.map((b, i) => ({ label: b.slice(0, 3), ...hasilBulan(group, year, i) }));
+    }
+    return [1, 2, 3, 4].map((w) => ({ label: `Minggu ${w}`, ...hasilMinggu(group, year, Number(month), w) }));
+  }
+  const niceMax = (v) => { const s = [4, 8, 12, 20, 28, 40, 60, 80, 100, 200]; return s.find((x) => x >= v) || Math.ceil(v / 50) * 50; };
+  function barPath(x, y, w, h, r) {
+    r = Math.min(r, w / 2, h);
+    return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+  }
+
+  function renderChart(root) {
+    const st = dash.chart;
+    const data = chartData();
+    const totOk = data.reduce((a, d) => a + d.ok, 0);
+    const totNg = data.reduce((a, d) => a + d.ng, 0);
+    const pctNg = totOk + totNg ? ((totNg / (totOk + totNg)) * 100).toFixed(1) : '0.0';
+
+    const W = 760, H = 300, L = 40, R = 10, T = 14, B = 34;
+    const iw = W - L - R, ih = H - T - B;
+    const max = niceMax(Math.max(1, ...data.map((d) => Math.max(d.ok, d.ng))));
+    const yy = (v) => T + ih - (v / max) * ih;
+    const band = iw / data.length;
+    const bw = Math.min(22, band / 2 - 4);
+
+    let svg = '';
+    for (let i = 0; i <= 4; i++) {
+      const v = (max / 4) * i, y = yy(v);
+      svg += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" class="db-grid"/><text x="${L - 8}" y="${y + 4}" text-anchor="end" class="db-axis">${Math.round(v)}</text>`;
+    }
+    data.forEach((d, i) => {
+      const cx = L + band * i + band / 2;
+      const hOk = (d.ok / max) * ih, hNg = (d.ng / max) * ih;
+      if (d.ok) svg += `<path d="${barPath(cx - bw - 1, yy(d.ok), bw, hOk, 4)}" fill="${C_OK}"/>`;
+      if (d.ng) svg += `<path d="${barPath(cx + 1, yy(d.ng), bw, hNg, 4)}" fill="${C_NG}"/>`;
+      svg += `<text x="${cx}" y="${H - 12}" text-anchor="middle" class="db-axis">${d.label}</text>`;
+      svg += `<rect class="db-hit" data-i="${i}" x="${L + band * i}" y="${T}" width="${band}" height="${ih + B}" fill="transparent"/>`;
+    });
+
+    const opt = (arr, cur) => arr.map(([v, t]) => `<option value="${v}" ${String(v) === String(cur) ? 'selected' : ''}>${t}</option>`).join('');
+    const years = [TODAY.y - 2, TODAY.y - 1, TODAY.y].map((y) => [y, y]);
+    const body = st.table
+      ? table([st.month === 'all' ? 'Bulan' : 'Minggu', 'OK', 'NG'], data.map((d) => tr(d.label, d.ok, d.ng)).join(''))
+      : `<div class="db-chart-wrap">
+           <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Grafik jumlah alat ukur OK dan NG">${svg}</svg>
+           <div class="db-tip" id="db-tip" hidden></div>
+         </div>`;
+
+    root.querySelector('#db-chart').innerHTML = `
+      <div class="db-head"><h3>Grafik Alat Ukur OK vs NG</h3>
+        <button type="button" class="btn btn-sm" data-chart-table>${st.table ? 'Tampilkan grafik' : 'Tampilkan tabel'}</button></div>
+      <div class="db-filters">
+        <label>Group<select data-f="group">${opt([['all', 'Semua group'], ...GROUPS.map((g) => [g, g])], st.group)}</select></label>
+        <label>Bulan<select data-f="month">${opt([['all', 'Semua bulan'], ...BULAN.map((b, i) => [i, b])], st.month)}</select></label>
+        <label>Tahun<select data-f="year">${opt(years, st.year)}</select></label>
+      </div>
+      <div class="db-kpis">
+        <span class="db-kpi"><i class="db-dot" style="background:${C_OK}"></i>OK <b>${totOk}</b></span>
+        <span class="db-kpi"><i class="db-dot" style="background:${C_NG}"></i>NG <b>${totNg}</b></span>
+        <span class="db-kpi muted">Persentase NG <b>${pctNg}%</b></span>
+      </div>
+      ${body}`;
+  }
+
+  /* ---------- Pasang semua widget + event ---------- */
+  function initDashboard(root) {
+    renderCalendar(root); renderPlan(root); renderChart(root);
+    if (root.dataset.dbBound) return; // event cukup dipasang sekali
+    root.dataset.dbBound = '1';
+
+    root.addEventListener('click', (e) => {
+      const nav = e.target.closest('[data-cal]');
+      if (nav) {
+        const t = new Date(dash.cal.y, dash.cal.m + Number(nav.dataset.cal), 1);
+        dash.cal = { y: t.getFullYear(), m: t.getMonth() };
+        renderCalendar(root); return;
+      }
+      const day = e.target.closest('[data-day]');
+      if (day) { dash.sel = { y: dash.cal.y, m: dash.cal.m, d: Number(day.dataset.day) }; renderCalendar(root); return; }
+      const done = e.target.closest('[data-done]');
+      if (done) { dash.done.add(done.dataset.done); renderPlan(root); return; }
+      if (e.target.closest('[data-chart-table]')) { dash.chart.table = !dash.chart.table; renderChart(root); }
+    });
+
+    root.addEventListener('change', (e) => {
+      const f = e.target.closest('[data-f]');
+      if (!f) return;
+      dash.chart[f.dataset.f] = f.dataset.f === 'group' || f.value === 'all' ? f.value : Number(f.value);
+      renderChart(root);
+    });
+
+    // Tooltip grafik
+    root.addEventListener('mousemove', (e) => {
+      const tip = root.querySelector('#db-tip');
+      const hit = e.target.closest && e.target.closest('.db-hit');
+      if (!tip) return;
+      if (!hit) { tip.hidden = true; return; }
+      const d = chartData()[Number(hit.dataset.i)];
+      const wrap = tip.parentElement.getBoundingClientRect();
+      tip.innerHTML = `<b>${d.label}</b><br><i class="db-dot" style="background:${C_OK}"></i>OK: ${d.ok}<br><i class="db-dot" style="background:${C_NG}"></i>NG: ${d.ng}`;
+      tip.hidden = false;
+      tip.style.left = Math.min(e.clientX - wrap.left + 14, wrap.width - 120) + 'px';
+      tip.style.top = Math.max(e.clientY - wrap.top - 10, 0) + 'px';
+    });
+    root.addEventListener('mouseleave', () => { const t = root.querySelector('#db-tip'); if (t) t.hidden = true; });
+  }
+
 
   /* ---------- Router halaman ---------- */
   function loadPage(name) {
@@ -167,7 +425,8 @@ document.addEventListener('DOMContentLoaded', () => {
       pageSubtitle.textContent = isAdmin
         ? 'Selamat datang di Dashboard Admin Sistem Kalibrasi'
         : 'Selamat datang di Dashboard Sistem Kalibrasi';
-      contentArea.innerHTML = isAdmin ? dashboardAdmin() : dashboardUser();
+      contentArea.innerHTML = dashboardHtml();
+      initDashboard(contentArea);
       return;
     }
 

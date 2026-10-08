@@ -1,90 +1,127 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+
+<!-- Pengaturan dasar halaman -->
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- Judul halaman -->
 <title>Login & Sign Up</title>
+
+<!-- Font yang digunakan pada halaman -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- File CSS untuk halaman login dan sign up -->
 <link rel="stylesheet" href="assets/css/login.css" />
+
 </head>
 <body>
 
+  <!-- Background overlay -->
   <div class="bg-overlay"></div>
 
+  <!-- Container utama login dan sign up -->
   <div class="auth-wrapper">
 
     <!-- ===================== LOGIN CARD ===================== -->
+    <!-- Form untuk masuk ke dalam sistem -->
     <div class="auth-card" id="loginCard">
 
+      <!-- Judul dan keterangan login -->
       <h1 class="title">Selamat <span>datang!</span></h1>
       <p class="subtitle">Masuk untuk mengakses akun dan dashboard</p>
 
+      <!-- Form login -->
       <form id="loginForm" novalidate>
+
+        <!-- Input username -->
         <div class="field">
           <label for="loginUsername">Username</label>
           <input type="text" id="loginUsername" name="username" placeholder="Masukkan username" autocomplete="username" required />
         </div>
 
+        <!-- Input password -->
         <div class="field">
           <label for="loginPassword">Password</label>
           <div class="password-wrap">
             <input type="password" id="loginPassword" name="password" placeholder="Masukkan password" autocomplete="current-password" required />
+
+            <!-- Tombol untuk melihat password -->
             <button type="button" class="toggle-eye" data-target="loginPassword" aria-label="Tampilkan password">
               <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
             </button>
           </div>
         </div>
 
+        <!-- Pilihan ingat akun dan lupa password -->
         <div class="row-between">
           <label class="checkbox">
             <input type="checkbox" id="ingatSaya" />
             <span>Ingat saya</span>
           </label>
+
           <a href="#" class="link-muted" id="lupaPasswordLink">Lupa Password?</a>
         </div>
 
+        <!-- Pesan error login -->
         <p class="error-msg" id="loginError"></p>
 
+        <!-- Tombol login -->
         <button type="submit" class="btn-primary">Log In</button>
       </form>
 
+      <!-- Link untuk berpindah ke form sign up -->
       <p class="switch-text">Tidak punya akun? <a href="#" id="showSignup">Sign Up</a></p>
     </div>
 
+
     <!-- ===================== SIGNUP CARD ===================== -->
+    <!-- Form untuk membuat akun baru -->
     <div class="auth-card hidden" id="signupCard">
 
+      <!-- Judul dan keterangan sign up -->
       <h1 class="title">Buat <span>akun</span></h1>
       <p class="subtitle">Daftar untuk mengakses dashboard</p>
 
+      <!-- Form sign up -->
       <form id="signupForm" novalidate>
+
+        <!-- Input username -->
         <div class="field">
           <label for="signupUsername">Username</label>
           <input type="text" id="signupUsername" name="username" placeholder="Buat username" autocomplete="username" required />
         </div>
 
+        <!-- Input password -->
         <div class="field">
           <label for="signupPassword">Password</label>
           <div class="password-wrap">
             <input type="password" id="signupPassword" name="password" placeholder="Buat password" autocomplete="new-password" required minlength="6" />
+
+            <!-- Tombol untuk melihat password -->
             <button type="button" class="toggle-eye" data-target="signupPassword" aria-label="Tampilkan password">
               <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
             </button>
           </div>
         </div>
 
+        <!-- Konfirmasi password -->
         <div class="field">
           <label for="konfirmasiPassword">Konfirmasi Password</label>
           <div class="password-wrap">
             <input type="password" id="konfirmasiPassword" name="konfirmasiPassword" placeholder="Ulangi password" autocomplete="new-password" required minlength="6" />
+
+            <!-- Tombol untuk melihat konfirmasi password -->
             <button type="button" class="toggle-eye" data-target="konfirmasiPassword" aria-label="Tampilkan password">
               <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
             </button>
           </div>
         </div>
 
+        <!-- Pilihan role akun -->
         <div class="field">
           <label for="roleSelect">Daftar sebagai</label>
           <select id="roleSelect" name="role">
@@ -93,17 +130,22 @@
           </select>
         </div>
 
+        <!-- Pesan error dan berhasil sign up -->
         <p class="error-msg" id="signupError"></p>
         <p class="success-msg" id="signupSuccess"></p>
 
+        <!-- Tombol sign up -->
         <button type="submit" class="btn-primary">Sign Up</button>
       </form>
 
+      <!-- Link untuk kembali ke form login -->
       <p class="switch-text">Sudah punya akun? <a href="#" id="showLogin">Log In</a></p>
     </div>
 
   </div>
 
+  <!-- File JavaScript untuk fungsi login dan sign up -->
   <script src="assets/js/login.js"></script>
+
 </body>
 </html>

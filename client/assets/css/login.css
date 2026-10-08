@@ -1,9 +1,16 @@
+/* =========================================================
+   RESET DASAR
+   ========================================================= */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+
+/* =========================================================
+   BODY / BACKGROUND LOGIN
+   ========================================================= */
 body {
   font-family: 'Poppins', system-ui, sans-serif;
   min-height: 100vh;
@@ -19,11 +26,20 @@ body {
   overflow-x: hidden;
 }
 
-input, select, button {
+
+/* Font untuk input, select, dan button */
+input,
+select,
+button {
   font-family: inherit;
 }
 
-/* Overlay opsional supaya form tetap kebaca di atas foto apapun */
+
+/* =========================================================
+   BACKGROUND OVERLAY
+   ========================================================= */
+
+/* Overlay agar form tetap terlihat jelas di atas background */
 .bg-overlay {
   position: fixed;
   inset: 0;
@@ -31,6 +47,10 @@ input, select, button {
   pointer-events: none;
 }
 
+
+/* =========================================================
+   CONTAINER LOGIN & SIGN UP
+   ========================================================= */
 .auth-wrapper {
   position: relative;
   z-index: 1;
@@ -39,6 +59,8 @@ input, select, button {
   padding: 16px;
 }
 
+
+/* Card form login / sign up */
 .auth-card {
   background: rgba(20, 30, 60, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -51,15 +73,30 @@ input, select, button {
   animation: fadeIn 0.35s ease;
 }
 
+
+/* Menyembunyikan card saat berpindah antara login dan sign up */
 .auth-card.hidden {
   display: none;
 }
 
+
+/* Animasi munculnya card */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
+
+/* =========================================================
+   JUDUL & SUBTITLE
+   ========================================================= */
 .title {
   font-size: 22px;
   font-weight: 700;
@@ -79,15 +116,23 @@ input, select, button {
   padding: 0 4px;
 }
 
+
+/* =========================================================
+   FORM FIELD
+   ========================================================= */
 .field {
   text-align: left;
   margin-bottom: 8px;
 }
 
+
+/* Menyembunyikan field tertentu */
 .field.hidden {
   display: none;
 }
 
+
+/* Label input */
 .field label {
   display: block;
   font-size: 11px;
@@ -95,6 +140,8 @@ input, select, button {
   margin-bottom: 4px;
 }
 
+
+/* Input dan select */
 .field input,
 .field select {
   width: 100%;
@@ -108,6 +155,8 @@ input, select, button {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+
+/* Tampilan dropdown select */
 .field select {
   appearance: none;
   -webkit-appearance: none;
@@ -116,24 +165,36 @@ input, select, button {
   background-position: right 12px center;
 }
 
+
+/* Placeholder pada input */
 .field input::placeholder {
   color: rgba(255, 255, 255, 0.4);
 }
 
+
+/* Tampilan input saat dipilih */
 .field input:focus,
 .field select:focus {
   border-color: #4A90E2;
   box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25);
 }
 
+
+/* =========================================================
+   PASSWORD & TOGGLE EYE
+   ========================================================= */
 .password-wrap {
   position: relative;
 }
 
+
+/* Memberikan ruang untuk icon mata */
 .password-wrap input {
   padding-right: 36px;
 }
 
+
+/* Tombol lihat / sembunyikan password */
 .toggle-eye {
   position: absolute;
   right: 10px;
@@ -147,15 +208,23 @@ input, select, button {
   align-items: center;
 }
 
+
+/* Ukuran icon mata */
 .toggle-eye svg {
   width: 15px;
   height: 15px;
 }
 
+
+/* Efek saat mouse diarahkan ke icon mata */
 .toggle-eye:hover {
   color: #fff;
 }
 
+
+/* =========================================================
+   INGAT SAYA & LUPA PASSWORD
+   ========================================================= */
 .row-between {
   display: flex;
   align-items: center;
@@ -163,6 +232,8 @@ input, select, button {
   margin-bottom: 12px;
 }
 
+
+/* Checkbox ingat saya */
 .checkbox {
   display: flex;
   align-items: center;
@@ -179,6 +250,8 @@ input, select, button {
   cursor: pointer;
 }
 
+
+/* Link lupa password */
 .link-muted {
   font-size: 11px;
   color: rgba(220, 228, 245, 0.75);
@@ -190,6 +263,10 @@ input, select, button {
   text-decoration: underline;
 }
 
+
+/* =========================================================
+   TOMBOL LOGIN & SIGN UP
+   ========================================================= */
 .btn-primary {
   width: 100%;
   padding: 11px;
@@ -203,21 +280,31 @@ input, select, button {
   transition: transform 0.15s, background 0.2s;
 }
 
+
+/* Efek hover tombol */
 .btn-primary:hover {
   background: #2f6ae0;
   transform: translateY(-1px);
 }
 
+
+/* Efek saat tombol ditekan */
 .btn-primary:active {
   transform: translateY(0);
 }
 
+
+/* Kondisi tombol tidak dapat digunakan */
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
+
+/* =========================================================
+   LINK PINDAH LOGIN / SIGN UP
+   ========================================================= */
 .switch-text {
   margin-top: 10px;
   font-size: 11px;
@@ -234,6 +321,10 @@ input, select, button {
   text-decoration: underline;
 }
 
+
+/* =========================================================
+   PESAN ERROR & BERHASIL
+   ========================================================= */
 .error-msg {
   color: #ff9b9b;
   font-size: 11px;
@@ -250,10 +341,15 @@ input, select, button {
   text-align: left;
 }
 
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+   ========================================================= */
 @media (max-width: 480px) {
   .auth-card {
     padding: 16px 20px;
   }
+
   .title {
     font-size: 19px;
   }

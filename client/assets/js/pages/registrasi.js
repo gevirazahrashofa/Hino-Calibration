@@ -10,7 +10,7 @@ async function alatApi(path, method = 'GET', body) {
     body: body ? JSON.stringify(body) : undefined
   });
   const d = await r.json().catch(() => ({}));
-  if (r.status === 401) { localStorage.clear(); sessionStorage.clear(); window.location.href = '/'; }
+  if (r.status === 401) throw new Error(d.message || 'Token ditolak server (401). Coba login ulang.');
   if (!r.ok) throw new Error(d.message || `Terjadi kesalahan (kode ${r.status}) pada ${method} ${path}`);
   return d;
 }
@@ -33,6 +33,61 @@ const missingOf = (list, d) => list.filter((f) => f.req && !d[f.k]).map((f) => f
 const checksHtml = (name, items, val = '') =>
   `<div class="check-row">${items.map((i) => `<label><input type="checkbox" name="${name}" value="${i}" ${String(val).includes(i) ? 'checked' : ''}> ${i}</label>`).join('')}</div>`;
 const checksVal = (form, name) => [...form.querySelectorAll(`input[name="${name}"]:checked`)].map((i) => i.value).join(', ');
+
+/* ---------- Tanda tangan (digambar di kanvas, disimpan sebagai gambar PNG) ---------- */
+function sigPadHtml(name, label, req) {
+  return `<div class="sig-field" data-sig="${name}">
+    <span class="sig-label">${label}${req ? ' <b class="req">*</b>' : ''}</span>
+    <div class="sig-box"><canvas class="sig-canvas" width="480" height="160"></canvas></div>
+    <div class="sig-actions">
+      <button type="button" class="btn btn-sm" data-sig-clear>Hapus tanda tangan</button>
+      <small>Tanda tangan di dalam kotak dengan mouse atau jari.</small>
+    </div>
+  </div>`;
+}
+
+function initSigPads(root) {
+  root.querySelectorAll('.sig-field').forEach((box) => {
+    const cv = box.querySelector('canvas');
+    const ctx = cv.getContext('2d');
+    ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1b1d3a';
+    let drawing = false;
+    let drawn = false;
+    const pos = (e) => {
+      const r = cv.getBoundingClientRect();
+      return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height];
+    };
+    cv.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      drawing = true; drawn = true;
+      cv.setPointerCapture(e.pointerId);
+      const [x, y] = pos(e);
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 0.1, y + 0.1); ctx.stroke();
+    });
+    cv.addEventListener('pointermove', (e) => {
+      if (!drawing) return;
+      const [x, y] = pos(e);
+      ctx.lineTo(x, y); ctx.stroke();
+    });
+    const stop = () => { drawing = false; };
+    cv.addEventListener('pointerup', stop);
+    cv.addEventListener('pointercancel', stop);
+    const clear = () => { ctx.clearRect(0, 0, cv.width, cv.height); drawn = false; };
+    box.querySelector('[data-sig-clear]').addEventListener('click', clear);
+    box._sig = { value: () => (drawn ? cv.toDataURL('image/png') : ''), clear };
+  });
+}
+
+const sigValue = (root, name) => {
+  const b = root.querySelector(`.sig-field[data-sig="${name}"]`);
+  return b && b._sig ? b._sig.value() : '';
+};
+const sigClearAll = (root) => root.querySelectorAll('.sig-field').forEach((b) => b._sig && b._sig.clear());
+
+// Menampilkan tanda tangan yang sudah tersimpan (gambar) atau teks lama (nama)
+const sigImg = (v) => (v && String(v).startsWith('data:image')
+  ? `<img class="sig-img" src="${v}" alt="Tanda tangan">`
+  : `<b>${esc(v) || '-'}</b>`);
 
 // Field master alat (dipakai daftar-alat.js, jangan dihapus)
 const ALAT_FIELDS = [
@@ -71,8 +126,7 @@ const PENG_FIELDS = [
   { k: 'penempatan', label: 'Tools Placement (Pos 5 Frame)', req: 1 },
   { k: 'kategori_alat', label: 'Category of Tools', req: 1, options: [['special', 'Special'], ['vehicle tools', 'Vehicle Tools'], ['general', 'General']] },
   { k: 'klasifikasi', label: 'Classification', req: 1, options: [['new process', 'New Process'], ['change model', 'Change Model'], ['update', 'Update'], ['change process', 'Change Process'], ['dispose', 'Dispose']] },
-  { k: 'alasan_perubahan', label: 'Reason Change (Alasan Perubahan)', type: 'textarea' },
-  { k: 'ttd_pemohon', label: 'TTD Applicant / Pemohon (nama)', req: 1 }
+  { k: 'alasan_perubahan', label: 'Reason Change (Alasan Perubahan)', type: 'textarea' }
 ];
 const DOK_ITEMS = ['Sertifikat', 'Buku panduan', 'Lainnya'];
 
@@ -90,6 +144,7 @@ function loadFormRegistrasi(c) {
         </div>
         <div class="form-grid">${renderFields(PENG_FIELDS, { tanggal_pengajuan: new Date().toISOString().slice(0, 10) })}</div>
         <div class="fld"><span>Penyerahan sertifikat, buku panduan, dll</span>${checksHtml('dok', DOK_ITEMS)}</div>
+        <div class="sig-row">${sigPadHtml('ttd_pemohon', 'TTD Applicant / Pemohon', true)}</div>
         <p class="msg" id="peng-msg"></p>
         <button class="btn btn-primary" type="submit">Kirim Pengajuan</button>
       </form>
@@ -102,6 +157,7 @@ function loadFormRegistrasi(c) {
     </div>`;
 
   const form = c.querySelector('#peng-form');
+  initSigPads(form);
   const msg = c.querySelector('#peng-msg');
   const pick = c.querySelector('#cancel-pick');
   const sel = form.elements.alat_id;
@@ -143,13 +199,20 @@ function loadFormRegistrasi(c) {
     const d = readFields(PENG_FIELDS, form);
     const miss = missingOf(PENG_FIELDS, d);
     if (kategori === 'cancellation' && !sel.value) miss.unshift('Alat yang akan di-cancel');
+    const ttd = sigValue(form, 'ttd_pemohon');
+    if (!ttd) miss.push('TTD Applicant / Pemohon');
     if (miss.length) { msg.classList.add('err'); msg.textContent = 'Data belum lengkap: ' + miss.join(', '); return; }
     const btn = form.querySelector('button[type=submit]');
     btn.disabled = true;
     try {
-      const r = await alatApi('/pengajuan', 'POST', { ...d, kategori, alat_id: kategori === 'cancellation' ? sel.value : null, dokumen: checksVal(form, 'dok') });
+      const r = await alatApi('/pengajuan', 'POST', {
+        ...d, kategori, ttd_pemohon: ttd,
+        alat_id: kategori === 'cancellation' ? sel.value : null,
+        dokumen: checksVal(form, 'dok')
+      });
       msg.classList.add('ok'); msg.textContent = r.message;
       form.reset();
+      sigClearAll(form);
       loadMine();
     } catch (err) { msg.classList.add('err'); msg.textContent = err.message; }
     finally { btn.disabled = false; }
