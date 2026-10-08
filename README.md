@@ -31,6 +31,7 @@ Frontend: HTML/CSS/JS vanilla (`client/`). Backend: Express 4 + Prisma ORM + Mar
 │   ├── routes/              # auth, alat-ukur, pengajuan, registrasi, sistem
 │   └── middleware/auth.js   # verifyToken, requireRole, adminOnly
 ├── docker-compose.yml       # DB MariaDB + Adminer
+├── package.json             # script root (teruskan ke server/)
 ├── .env.example             # contoh env (commit), .env asli gitignored
 └── README.md
 ```
@@ -43,6 +44,8 @@ Frontend: HTML/CSS/JS vanilla (`client/`). Backend: Express 4 + Prisma ORM + Mar
 
 ## Cara menjalankan (keseluruhan)
 
+Semua perintah di bawah dijalankan dari root proyek (ada `package.json` root yang meneruskan ke `server/`).
+
 1. Clone dan masuk direktori:
    ```bash
    git clone <repo-url>
@@ -50,8 +53,7 @@ Frontend: HTML/CSS/JS vanilla (`client/`). Backend: Express 4 + Prisma ORM + Mar
    ```
 2. Install backend:
    ```bash
-   cd server
-   npm install
+   npm run setup
    ```
 3. Siapkan env (satu file di root; npm script `prisma:*` otomatis memuatnya):
    ```bash
@@ -59,21 +61,20 @@ Frontend: HTML/CSS/JS vanilla (`client/`). Backend: Express 4 + Prisma ORM + Mar
    # isi default sudah cocok untuk docker-compose:
    # DATABASE_URL="mysql://hino:hino_pass@localhost:3307/hino_calibration"
    ```
-4. Nyalakan database Docker (MariaDB 11 di `localhost:3307`, dari dalam `server/`):
+4. Nyalakan database Docker (MariaDB 11 di `localhost:3307`):
    ```bash
    npm run db:up
    npm run db:logs
    ```
-   (atau dari root: `docker compose up -d db`).
    Database `hino_calibration`, user `hino` / password `hino_pass` dibuat otomatis. Prisma migrate juga bisa membuat DB bila belum ada.
-5. Migrasi Prisma (membuat tabel `users, alat_ukur, riwayat_pembatalan, pengajuan, pengaturan`, dari dalam `server/`):
+5. Migrasi Prisma (membuat tabel `users, alat_ukur, riwayat_pembatalan, pengajuan, pengaturan`):
    ```bash
    npm run prisma:migrate
    npm run prisma:generate
    ```
-   Catatan: user `hino` tidak punya hak `CREATE DATABASE` untuk shadow DB migrate. Bila `migrate dev` error `P3014/P1010`, jalankan sekali dengan URL root:
+   Catatan: user `hino` tidak punya hak `CREATE DATABASE` untuk shadow DB migrate. Bila `migrate dev` error `P3014/P1010`, jalankan sekali dari `server/` dengan URL root:
    ```bash
-   DATABASE_URL="mysql://root:root@localhost:3307/hino_calibration" npx prisma migrate dev
+   cd server && DATABASE_URL="mysql://root:root@localhost:3307/hino_calibration" npx prisma migrate dev
    ```
    Runtime app tetap memakai `hino` (cukup hak CRUD).
 6. Jalankan server:
@@ -93,11 +94,11 @@ Buat admin pertama: daftar sebagai `user` via UI, lalu via Adminer / Prisma Stud
 UPDATE users SET role='admin' WHERE username='nama_user';
 ```
 
-Reset total (hapus data DB):
+Reset total (hapus data DB, dari root):
 ```bash
 docker compose down -v
-docker compose up -d db
-npx prisma migrate dev
+npm run db:up
+npm run prisma:migrate
 ```
 
 ## Variabel environment
@@ -132,8 +133,9 @@ Semua kecuali `/api/auth/*` dan `/api/health` butuh header `Authorization: Beare
 
 Format body frontend memakai `snake_case` (`nama_alat, control_number, ...`); backend Prisma memakai `camelCase` dan menormalkan dua arah agar kompatibel.
 
-## Script npm (`server/`)
+## Script npm (dari root; diteruskan ke `server/` bila perlu)
 
+- `npm run setup` — install dependensi backend (`server/`)
 - `npm start` — jalan produksi
 - `npm run dev` — nodemon
 - `npm run db:up` / `db:down` / `db:logs` — kontrol container DB
@@ -150,7 +152,8 @@ Format body frontend memakai `snake_case` (`nama_alat, control_number, ...`); ba
 - `401 Token tidak ditemukan / Sesi habis`: login ulang; pastikan header `Authorization: Bearer ...` terkirim (frontend memakai `/api` relatif).
 - `Prisma enum / non-torque`: API menerima `non-torque` dan `non_torque`, disimpan sebagai enum Prisma `non_torque` (`@map("non-torque")`).
 - Dashboard angka/kalender/grafik masih contoh: memang dummy di `dashboard.js` (`TOTAL_TORSI`, `jadwalHari()`), belum query API.
-- `.../registrasi` dan `.../sistem` 404: pastikan `npm install` sudah menarik `@prisma/client` dan server dijalankan dari `server/` setelah migrate.
+- `.../registrasi` dan `.../sistem` 404: pastikan `npm run setup` sudah menarik `@prisma/client` dan migrate sudah jalan.
+- `ENOENT ... package.json` saat `npm run <script>`: script backend hanya ada di root dan `server/` — jalankan dari salah satu direktori itu, bukan dari subfolder lain.
 
 ## Catatan database
 

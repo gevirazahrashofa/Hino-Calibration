@@ -1,0 +1,17 @@
+{
+  "name": "Hino Calibration",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Hino Calibration — root scripts (backend lives in server/)",
+  "scripts": {
+    "setup": "npm --prefix server install",
+    "dev": "npm --prefix server run dev",
+    "start": "npm --prefix server run start",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f db",
+    "prisma:generate": "npm --prefix server run prisma:generate",
+    "prisma:migrate": "npm --prefix server run prisma:migrate",
+    "prisma:studio": "npm --prefix server run prisma:studio"
+  }
+}
