@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-// Prisma CLI membaca server/.env, runtime lama memakai ../.env — dukung keduanya.
+// Env tunggal di root proyek; dukung juga server/.env bila ada (legacy).
 require('dotenv').config();
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
@@ -34,8 +34,18 @@ app.get('/dashboard', (req, res) => {
 });
 
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
+  });
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(
+        `Port ${PORT} sudah dipakai — kemungkinan server lain masih jalan. ` +
+          `Hentikan dulu, misal: fuser -k ${PORT}/tcp`
+      );
+      process.exit(1);
+    }
+    throw err;
   });
 }
 
