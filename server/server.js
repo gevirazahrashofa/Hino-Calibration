@@ -40,8 +40,7 @@ if (require.main === module) {
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
       console.error(
-        `Port ${PORT} sudah dipakai — kemungkinan server lain masih jalan. ` +
-          `Hentikan dulu, misal: fuser -k ${PORT}/tcp`
+        `Port ${PORT} sudah dipakai — hentikan proses lain yang memakai port tersebut, lalu jalankan ulang.`
       );
       process.exit(1);
     }
