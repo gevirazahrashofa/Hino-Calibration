@@ -53,24 +53,23 @@ Frontend: HTML/CSS/JS vanilla (`client/`). Backend: Express 4 + Prisma ORM + Mar
    cd server
    npm install
    ```
-3. Siapkan env (dibaca dari `server/.env` oleh Prisma CLI dan `server.js`; salin ke dua lokasi agar konsisten):
+3. Siapkan env (satu file di root; npm script `prisma:*` otomatis memuatnya):
    ```bash
-   cp ../.env.example ../.env
-   cp ../.env.example .env
+   cp .env.example .env
    # isi default sudah cocok untuk docker-compose:
    # DATABASE_URL="mysql://hino:hino_pass@localhost:3307/hino_calibration"
    ```
-4. Nyalakan database Docker (MariaDB 11 di `localhost:3307`):
+4. Nyalakan database Docker (MariaDB 11 di `localhost:3307`, dari dalam `server/`):
    ```bash
-   docker compose up -d db
-   docker compose ps
-   docker compose logs -f db
+   npm run db:up
+   npm run db:logs
    ```
+   (atau dari root: `docker compose up -d db`).
    Database `hino_calibration`, user `hino` / password `hino_pass` dibuat otomatis. Prisma migrate juga bisa membuat DB bila belum ada.
-5. Migrasi Prisma (membuat tabel `users, alat_ukur, riwayat_pembatalan, pengajuan, pengaturan`):
+5. Migrasi Prisma (membuat tabel `users, alat_ukur, riwayat_pembatalan, pengajuan, pengaturan`, dari dalam `server/`):
    ```bash
-   npx prisma migrate dev
-   npx prisma generate
+   npm run prisma:migrate
+   npm run prisma:generate
    ```
    Catatan: user `hino` tidak punya hak `CREATE DATABASE` untuk shadow DB migrate. Bila `migrate dev` error `P3014/P1010`, jalankan sekali dengan URL root:
    ```bash
