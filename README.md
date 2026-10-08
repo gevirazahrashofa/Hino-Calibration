@@ -145,6 +145,7 @@ Format body frontend memakai `snake_case` (`nama_alat, control_number, ...`); ba
 
 - `Can't reach database / P1000/P1001`: container DB belum ready. Cek `docker compose ps`, `docker compose logs db`, tunggu healthcheck hijau, cek `DATABASE_URL` (port `3307`, bukan `3306`).
 - `Port 3307 sudah dipakai`: hentikan MySQL lokal lain atau ubah mapping di `docker-compose.yml`.
+- `failed to connect to the docker API ... desktop/docker.sock`: konteks Docker menunjuk ke Docker Desktop yang tidak jalan. Perbaiki sekali: `docker context use default`, lalu ulangi `npm run db:up`. Alternatif per-perintah: `DOCKER_HOST=unix:///var/run/docker.sock npm run db:up`.
 - `P2002 / Control number sudah terdaftar`: `control_number` unique — pakai nomor lain atau edit data lama.
 - `401 Token tidak ditemukan / Sesi habis`: login ulang; pastikan header `Authorization: Bearer ...` terkirim (frontend memakai `/api` relatif).
 - `Prisma enum / non-torque`: API menerima `non-torque` dan `non_torque`, disimpan sebagai enum Prisma `non_torque` (`@map("non-torque")`).
