@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const TOTAL_ALAT = TOTAL_TORSI + TOTAL_NON_TORSI;
 
   /* ---------- DATA CONTOH 2: group & jadwal kalibrasi alat torsi ---------- */
-  const GROUPS = ['Machining A', 'Machining B', 'Assembly', 'Vehicle QC'];
+  const GROUPS = ['C15', 'B10'];
   const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   const HARI = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
   const TORQUE_MODELS = ['Torque Wrench 50 Nm', 'Torque Wrench 100 Nm', 'Torque Wrench 200 Nm', 'Torque Wrench 350 Nm', 'Torque Driver 10 Nm', 'Torque Driver 25 Nm'];
@@ -139,18 +139,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---------- DATA CONTOH 3: alat baru perlu review (admin) & pengajuan user ---------- */
   const ALAT_BARU = [
-    { tgl: '07 Okt 2026', nama: 'Torque Wrench 200 Nm', pengaju: 'Budi', tipe: 'Torsi' },
-    { tgl: '06 Okt 2026', nama: 'Micrometer 0-25 mm', pengaju: 'Sari', tipe: 'Non-torsi' },
-    { tgl: '06 Okt 2026', nama: 'Torque Driver 10 Nm', pengaju: 'Andi', tipe: 'Torsi' },
-    { tgl: '05 Okt 2026', nama: 'Dial Gauge 10 mm', pengaju: 'Rina', tipe: 'Non-torsi' },
-    { tgl: '03 Okt 2026', nama: 'Caliper Digital 150 mm', pengaju: 'Budi', tipe: 'Non-torsi' }
+    { tgl: '07 Okt 2026', nama: 'Torque Wrench 200 Nm', pengaju: 'Gevira', tipe: 'Torsi' },
+    { tgl: '06 Okt 2026', nama: 'Torque Wrench 75 Nm', pengaju: 'Zahra', tipe: 'Non-torsi' },
+    { tgl: '06 Okt 2026', nama: 'Torque Wrench 250 Nm', pengaju: 'Shofa', tipe: 'Torsi' },
+    { tgl: '05 Okt 2026', nama: 'Torque Wrench 20 Nm', pengaju: 'Dinaa', tipe: 'Non-torsi' },
+    { tgl: '03 Okt 2026', nama: 'Torque Wrench 100 Nm', pengaju: 'Budi', tipe: 'Non-torsi' }
   ];
   const PENGAJUAN_USER = [
     { tgl: '07 Okt 2026', nama: 'Torque Wrench 200 Nm', tipe: 'Torsi', status: 'Pending' },
-    { tgl: '03 Okt 2026', nama: 'Caliper Digital 150 mm', tipe: 'Non-torsi', status: 'Pending' },
-    { tgl: '27 Sep 2026', nama: 'Dial Gauge 10 mm', tipe: 'Non-torsi', status: 'Approved' },
-    { tgl: '20 Sep 2026', nama: 'Torque Driver 25 Nm', tipe: 'Torsi', status: 'Approved' },
-    { tgl: '12 Sep 2026', nama: 'Height Gauge 300 mm', tipe: 'Non-torsi', status: 'Rejected' }
+    { tgl: '03 Okt 2026', nama: 'Torque Wrench 75 Nm', tipe: 'Torsi', status: 'Pending' },
+    { tgl: '27 Sep 2026', nama: 'CNN', tipe: 'Non-torsi', status: 'Approved' },
+    { tgl: '20 Sep 2026', nama: 'Torque Wrench 20 Nm', tipe: 'Torsi', status: 'Approved' },
+    { tgl: '12 Sep 2026', nama: 'Caliper', tipe: 'Non-torsi', status: 'Rejected' }
   ];
 
   /* ---------- DATA CONTOH 4: hasil kalibrasi OK / NG untuk grafik ---------- */
@@ -211,7 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </section>`;
 
     return `
-      <div class="db-note">Data di dashboard ini masih contoh (dummy) dan belum terhubung ke menu lain.</div>
       <section class="stat-grid">
         ${statCard('Total Semua Alat Ukur', TOTAL_ALAT)}
         ${statCard('Total Alat Torsi', TOTAL_TORSI, 'ok')}

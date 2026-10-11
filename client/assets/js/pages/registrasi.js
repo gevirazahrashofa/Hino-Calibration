@@ -1,5 +1,5 @@
 /* ---------- Helper bersama (dipakai daftar-alat.js & pengajuan.js) ---------- */
-const ALAT_API = 'http://localhost:3000/api';
+const ALAT_API = '/api';
 const authGet = (k) => localStorage.getItem(k) || sessionStorage.getItem(k);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 

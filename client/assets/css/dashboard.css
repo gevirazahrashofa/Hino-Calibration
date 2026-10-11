@@ -27,7 +27,7 @@
 
 body {
   margin: 0;
-  font-family: 'Poppins', system-ui, sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
   background: var(--bg);
   color: var(--ink);
 }

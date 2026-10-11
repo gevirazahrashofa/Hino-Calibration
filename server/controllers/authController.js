@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const pool = require('../config/db');
+const prisma = require('../config/prisma');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'ganti_dengan_secret_yang_kuat';
 
@@ -15,21 +15,24 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'Password minimal 6 karakter.' });
     }
 
-    const [existing] = await pool.query('SELECT id FROM users WHERE username = ?', [username]);
-    if (existing.length > 0) {
+    const existing = await prisma.user.findUnique({ where: { username } });
+    if (existing) {
       return res.status(409).json({ message: 'Username sudah digunakan.' });
     }
 
-    const finalRole = role === 'admin' ? 'admin' : 'staff';
+    // Skema hanya mengenal 'admin' | 'user'. Nilai lain (termasuk 'staff' lama) dinormalkan ke 'user'.
+    const finalRole = role === 'admin' ? 'admin' : 'user';
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await pool.query(
-      'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
-      [username, hashedPassword, finalRole]
-    );
+    await prisma.user.create({
+      data: { username, password: hashedPassword, role: finalRole },
+    });
 
     res.status(201).json({ message: 'Registrasi berhasil' });
   } catch (err) {
+    if (err.code === 'P2002') {
+      return res.status(409).json({ message: 'Username sudah digunakan.' });
+    }
     res.status(500).json({ message: err.message });
   }
 };
@@ -37,10 +40,9 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { username, password, ingatSaya } = req.body;
-    const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
-    if (rows.length === 0) return res.status(401).json({ message: 'Username tidak ditemukan' });
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) return res.status(401).json({ message: 'Username tidak ditemukan' });
 
-    const user = rows[0];
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ message: 'Password salah' });
 

@@ -13,13 +13,24 @@ function verifyToken(req, res, next) {
   });
 }
 
+function normalizeRole(role) {
+  return String(role || "").toLowerCase();
+}
+
 function requireRole(role) {
+  const allowed = Array.isArray(role) ? role.map(normalizeRole) : [normalizeRole(role)];
   return (req, res, next) => {
-    if (req.user.role !== role) {
+    if (!req.user || !allowed.includes(normalizeRole(req.user.role))) {
       return res.status(403).json({ message: "Akses ditolak." });
     }
     next();
   };
 }
 
-module.exports = { verifyToken, requireRole };
+function isAdmin(user) {
+  return normalizeRole(user && user.role) === "admin";
+}
+
+const adminOnly = requireRole("admin");
+
+module.exports = { verifyToken, requireRole, isAdmin, adminOnly };
