@@ -61,7 +61,7 @@ npm run prisma:seed
 | `npm run db:up` / `db:down` / `db:logs` | nyala/mati/log database |
 | `npm run prisma:migrate` | migrasi skema DB |
 | `npm run prisma:seed` | buat admin awal (aman diulang, dilewati bila sudah ada) |
-| `npm run prisma:studio` | GUI database |
+| `npm run prisma:studio` | Melihat isi database |
 
 Struktur: `client/` (login, dashboard, assets) · `server/` (Express, Prisma di `prisma/`, API di `routes/` + `controllers/`) · `docker-compose.yml` + `docker/init-db/` (database).
 
